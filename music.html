@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Harmony Flow | Modern Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1e1e2f 0%, #13131f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* Main player card */
+        .player-card {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(20, 20, 35, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            padding: 1.8rem 1.8rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Header + now playing */
+        .now-playing-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .album-art {
+            width: 180px;
+            height: 180px;
+            background: linear-gradient(145deg, #2a2a40, #1a1a2c);
+            border-radius: 2rem;
+            margin: 0 auto 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s;
+        }
+
+        .album-art i {
+            font-size: 5rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .song-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #f0f0ff;
+            margin-bottom: 0.3rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+        }
+
+        .artist-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #aaa9ce;
+            margin-bottom: 0.8rem;
+        }
+
+        /* Progress bar area */
+        .progress-area {
+            margin: 1rem 0 0.8rem;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #b9b9e0;
+            margin-bottom: 0.4rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #2d2d44;
+            border-radius: 20px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #c084fc, #8b5cf6);
+            border-radius: 20px;
+            position: relative;
+            transition: width 0.05s linear;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.8rem 0 1.5rem;
+        }
+
+        .ctrl-btn {
+            background: rgba(30, 30, 50, 0.9);
+            border: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #e2e2ff;
+            font-size: 1.5rem;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .ctrl-btn:hover {
+            background: #8b5cf6;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .play-pause-btn {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            width: 68px;
+            height: 68px;
+            font-size: 2rem;
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .play-pause-btn:hover {
+            transform: scale(1.07);
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+        }
+
+        /* Volume row */
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            margin-bottom: 1.6rem;
+        }
+
+        .volume-container i {
+            color: #c4b5fd;
+            font-size: 1.1rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #3a3a5a;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #c084fc;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 4px #a78bfa;
+        }
+
+        /* Playlist section */
+        .playlist-section {
+            margin-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.2rem;
+        }
+
+        .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            color: #dbd9ff;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+        }
+
+        .playlist-items {
+            max-height: 210px;
+            overflow-y: auto;
+            padding-right: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .playlist-items::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .playlist-items::-webkit-scrollbar-track {
+            background: #232236;
+            border-radius: 10px;
+        }
+
+        .playlist-items::-webkit-scrollbar-thumb {
+            background: #8b5cf6;
+            border-radius: 10px;
+        }
+
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.7rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .song-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .song-item.active-song {
+            background: linear-gradient(95deg, rgba(139, 92, 246, 0.3), rgba(168, 85, 247, 0.15));
+            border-left: 4px solid #c084fc;
+            border-radius: 2rem;
+        }
+
+        .song-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .song-item-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #f0efff;
+        }
+
+        .song-item-artist {
+            font-size: 0.7rem;
+            color: #9e9ece;
+        }
+
+        .duration-badge {
+            font-size: 0.7rem;
+            background: #1e1e2c;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            color: #c7c7f0;
+        }
+
+        .autoplay-badge {
+            background: #2a2a3c;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .autoplay-badge.active {
+            background: #7c3aed;
+            color: white;
+        }
+
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #5f5f8a;
+        }
+
+        @media (max-width: 480px) {
+            .player-card {
+                padding: 1.2rem;
+            }
+
+            .ctrl-btn {
+                width: 45px;
+                height: 45px;
+            }
+
+            .play-pause-btn {
+                width: 60px;
+                height: 60px;
+            }
+
+            .song-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="player-card">
+        <!-- now playing visual -->
+        <div class="now-playing-section">
+            <div class="album-art">
+                <i class="fas fa-headphones" id="albumIcon"></i>
+            </div>
+            <div class="song-title" id="songTitle">Midnight Vibes</div>
+            <div class="artist-name" id="artistName">Luna Echo</div>
+        </div>
+
+        <!-- progress bar + duration -->
+        <div class="progress-area">
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="totalDuration">0:00</span>
+            </div>
+            <div class="progress-bar-bg" id="progressBarBg">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- main controls -->
+        <div class="controls">
+            <button class="ctrl-btn" id="prevBtn"><i class="fas fa-backward-step"></i></button>
+            <button class="ctrl-btn play-pause-btn" id="playPauseBtn"><i class="fas fa-play"
+                    id="playPauseIcon"></i></button>
+            <button class="ctrl-btn" id="nextBtn"><i class="fas fa-forward-step"></i></button>
+        </div>
+
+        <!-- volume slider -->
+        <div class="volume-container">
+            <i class="fas fa-volume-down"></i>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.75">
+            <i class="fas fa-volume-up"></i>
+        </div>
+
+        <!-- playlist + autoplay toggle -->
+        <div class="playlist-section">
+            <div class="playlist-header">
+                <span><i class="fas fa-list-music"></i> Playlist · 4 tracks</span>
+                <div class="autoplay-badge" id="autoplayToggle">
+                    <i class="fas fa-infinity"></i> <span id="autoplayText">Autoplay OFF</span>
+                </div>
+            </div>
+            <div class="playlist-items" id="playlistContainer">
+                <!-- dynamic playlist from JS -->
+            </div>
+        </div>
+        <footer>🎵 clean player | progress bar | volume | playlist</footer>
+    </div>
+
+    <script>
+        // ---------- SONG DATABASE ----------
+        const songsList = [
+            {
+                title: "Midnight Vibes",
+                artist: "Luna Echo",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                durationFormatted: "3:28"
+            },
+            {
+                title: "Electric Dreams",
+                artist: "Neon Pulse",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                durationFormatted: "3:56"
+            },
+            {
+                title: "Golden Hour",
+                artist: "Aurora Waves",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                durationFormatted: "4:12"
+            },
+            {
+                title: "Starlight Journey",
+                artist: "Cosmic Drift",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+                durationFormatted: "3:44"
+            }
+        ];
+
+        // DOM elements
+        const audio = new Audio();
+        audio.preload = "metadata";
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+        const progressBg = document.getElementById('progressBarBg');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const totalDurationSpan = document.getElementById('totalDuration');
+        const songTitleElem = document.getElementById('songTitle');
+        const artistNameElem = document.getElementById('artistName');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const playlistContainer = document.getElementById('playlistContainer');
+        const autoplayToggleDiv = document.getElementById('autoplayToggle');
+        const autoplayTextSpan = document.getElementById('autoplayText');
+
+        // Player state
+        let currentSongIndex = 0;            // 0-index
+        let isPlaying = false;
+        let autoplayEnabled = true;           // bonus: autoplay feature ON by default (could be toggled)
+        let isSeeking = false;                // avoid conflict while dragging progress
+
+        // Helper: format seconds to MM:SS
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Load current song (index)
+        function loadSong(index) {
+            const song = songsList[index];
+            if (!song) return;
+            // avoid flicker, pause if playing
+            const wasPlaying = isPlaying;
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                updatePlayPauseUI();
+            }
+            audio.src = song.src;
+            songTitleElem.innerText = song.title;
+            artistNameElem.innerText = song.artist;
+            // reset progress UI
+            progressFill.style.width = "0%";
+            currentTimeSpan.innerText = "0:00";
+            // duration will be set on loadedmetadata, but we can prefill from formatted data
+            totalDurationSpan.innerText = song.durationFormatted;
+
+            // update active highlight in playlist
+            renderPlaylistHighlight();
+
+            // If we were playing or autoplay context, resume after loading
+            // autoplay will be called after canplay through event, but set flag
+            if (wasPlaying) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    updatePlayPauseUI();
+                }).catch(e => console.log("autoplay blocked, user interaction needed"));
+            } else {
+                // if autoplayEnabled AND player was not playing but we changed track, sometimes autoplay next track? not here
+                // but we keep consistent, only auto play if enabled and user didn't pause before? we will trigger via next/prev? 
+                // For UX: when manually select from playlist or next/prev, we start playing automatically? yes nice.
+                // But we need to respect: after manual selection from playlist -> start playback automatically (makes sense)
+                // However if user paused, and then clicks next, we start playing next. standard behavior.
+                // We'll auto-play after load ONLY if current global isPlaying flag is false? But we called loadSong due to next/prev and we want play.
+                // The controller (next/prev/playlist click) will handle that logic: they call playNewTrack() pattern.
+            }
+            // ensure metadata event
+        }
+
+        // update play/pause button icon
+        function updatePlayPauseUI() {
+            if (isPlaying) {
+                playPauseIcon.classList.remove('fa-play');
+                playPauseIcon.classList.add('fa-pause');
+            } else {
+                playPauseIcon.classList.remove('fa-pause');
+                playPauseIcon.classList.add('fa-play');
+            }
+        }
+
+        // play current loaded audio
+        function playCurrent() {
+            if (!audio.src) return;
+            audio.play().then(() => {
+                isPlaying = true;
+                updatePlayPauseUI();
+            }).catch(err => {
+                console.warn("playback error: ", err);
+                isPlaying = false;
+                updatePlayPauseUI();
+            });
+        }
+
+        function pauseCurrent() {
+            audio.pause();
+            isPlaying = false;
+            updatePlayPauseUI();
+        }
+
+        function togglePlayPause() {
+            if (!audio.src) loadSong(currentSongIndex);
+            if (isPlaying) {
+                pauseCurrent();
+            } else {
+                playCurrent();
+            }
+        }
+
+        // next track
+        function nextTrack() {
+            let newIndex = currentSongIndex + 1;
+            if (newIndex >= songsList.length) {
+                if (autoplayEnabled) {
+                    newIndex = 0; // loop playlist if autoplay on
+                } else {
+                    // if autoplay disabled: stop at end, pause and reset?
+                    if (isPlaying) pauseCurrent();
+                    return;
+                }
+            }
+            if (newIndex !== currentSongIndex) {
+                currentSongIndex = newIndex;
+                loadSong(currentSongIndex);
+                playCurrent();  // auto play next track
+            } else if (newIndex === currentSongIndex && !autoplayEnabled && currentSongIndex === songsList.length - 1) {
+                // at last track, no next
+                if (isPlaying) pauseCurrent();
+            }
+        }
+
+        // prev track
+        function prevTrack() {
+            let newIndex = currentSongIndex - 1;
+            if (newIndex < 0) {
+                if (autoplayEnabled) {
+                    newIndex = songsList.length - 1;
+                } else {
+                    // if autoplay off, stay first track but don't go negative
+                    newIndex = 0;
+                }
+            }
+            currentSongIndex = newIndex;
+            loadSong(currentSongIndex);
+            playCurrent();
+        }
+
+        // Update progress bar from audio timeupdate
+        function updateProgress() {
+            if (!isSeeking && audio.duration && !isNaN(audio.duration)) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${percent}%`;
+                currentTimeSpan.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        // Seek when clicking on progress bar
+        function handleProgressSeek(e) {
+            const rect = progressBg.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            if (width > 0 && audio.duration) {
+                const seekTime = (clickX / width) * audio.duration;
+                audio.currentTime = seekTime;
+                updateProgress();
+            }
+        }
+
+        // Volume control
+        function setVolume(value) {
+            audio.volume = parseFloat(value);
+            volumeSlider.value = value;
+        }
+
+        // Render playlist items and highlight active song
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            songsList.forEach((song, idx) => {
+                const songDiv = document.createElement('div');
+                songDiv.classList.add('song-item');
+                if (idx === currentSongIndex) songDiv.classList.add('active-song');
+                songDiv.innerHTML = `
+                <div class="song-info">
+                    <span class="song-item-title">${escapeHtml(song.title)}</span>
+                    <span class="song-item-artist">${escapeHtml(song.artist)}</span>
+                </div>
+                <div class="duration-badge">${song.durationFormatted}</div>
+            `;
+                songDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (currentSongIndex === idx && isPlaying) {
+                        // same song: just keep playing, but maybe restart? no, just optional.
+                        // but to improve: if same song clicked, do nothing extra
+                    } else {
+                        currentSongIndex = idx;
+                        loadSong(currentSongIndex);
+                        playCurrent();
+                    }
+                    renderPlaylistHighlight();
+                });
+                playlistContainer.appendChild(songDiv);
+            });
+        }
+
+        function renderPlaylistHighlight() {
+            const items = document.querySelectorAll('.song-item');
+            items.forEach((item, i) => {
+                if (i === currentSongIndex) {
+                    item.classList.add('active-song');
+                } else {
+                    item.classList.remove('active-song');
+                }
+            });
+        }
+
+        // simple XSS escape for safety
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // handle audio ended event
+        function onAudioEnded() {
+            if (autoplayEnabled) {
+                // move to next track automatically
+                let nextIdx = currentSongIndex + 1;
+                if (nextIdx >= songsList.length) {
+                    nextIdx = 0;   // loop playlist
+                }
+                currentSongIndex = nextIdx;
+                loadSong(currentSongIndex);
+                playCurrent();
+            } else {
+                // Autoplay disabled: just stop and update UI
+                isPlaying = false;
+                updatePlayPauseUI();
+                // reset progress to beginning? keep at end maybe
+                progressFill.style.width = "0%";
+                currentTimeSpan.innerText = formatTime(0);
+                // optional: show pause state
+            }
+        }
+
+        // set duration metadata
+        function onLoadedMetadata() {
+            if (audio.duration && isFinite(audio.duration)) {
+                totalDurationSpan.innerText = formatTime(audio.duration);
+                // update playlist duration badge in real time? we already have formatted, but let's correct if diff
+                const currentSong = songsList[currentSongIndex];
+                if (currentSong && formatTime(audio.duration) !== currentSong.durationFormatted) {
+                    // update duration badge for playlist
+                    songsList[currentSongIndex].durationFormatted = formatTime(audio.duration);
+                    renderPlaylist();  // re-render to reflect correct duration
+                } else if (currentSong) {
+                    // keep consistency
+                }
+            }
+        }
+
+        // attach events & initialize player
+        function initPlayer() {
+            renderPlaylist();
+            // set initial song
+            currentSongIndex = 0;
+            loadSong(0);
+            audio.volume = 0.75;
+            volumeSlider.value = 0.75;
+
+            // events
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+            volumeSlider.addEventListener('input', (e) => setVolume(e.target.value));
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', onAudioEnded);
+            audio.addEventListener('loadedmetadata', onLoadedMetadata);
+            progressBg.addEventListener('click', (e) => {
+                isSeeking = false;
+                handleProgressSeek(e);
+            });
+            progressBg.addEventListener('mousedown', () => { isSeeking = true; });
+            window.addEventListener('mouseup', () => { isSeeking = false; });
+            // optional: touch support
+            progressBg.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const rect = progressBg.getBoundingClientRect();
+                const touchX = e.touches[0].clientX - rect.left;
+                const width = rect.width;
+                if (width > 0 && audio.duration) {
+                    const seekTime = (touchX / width) * audio.duration;
+                    audio.currentTime = seekTime;
+                    updateProgress();
+                }
+            });
+            progressBg.addEventListener('touchstart', (e) => {
+                isSeeking = true;
+                handleProgressSeek(e.touches[0]);
+            });
+            progressBg.addEventListener('touchend', () => { isSeeking = false; });
+
+            // Autoplay toggle logic
+            function toggleAutoplay() {
+                autoplayEnabled = !autoplayEnabled;
+                if (autoplayEnabled) {
+                    autoplayTextSpan.innerText = 'Autoplay ON';
+                    autoplayToggleDiv.classList.add('active');
+                } else {
+                    autoplayTextSpan.innerText = 'Autoplay OFF';
+                    autoplayToggleDiv.classList.remove('active');
+                }
+            }
+            autoplayToggleDiv.addEventListener('click', toggleAutoplay);
+            // set initial autoplay UI state
+            if (autoplayEnabled) {
+                autoplayTextSpan.innerText = 'Autoplay ON';
+                autoplayToggleDiv.classList.add('active');
+            } else {
+                autoplayTextSpan.innerText = 'Autoplay OFF';
+                autoplayToggleDiv.classList.remove('active');
+            }
+
+            // small fix: after loading metadata ensure UI
+            audio.addEventListener('canplay', () => {
+                if (totalDurationSpan.innerText === "0:00" && audio.duration) {
+                    totalDurationSpan.innerText = formatTime(audio.duration);
+                }
+            });
+
+            // If user clicks anywhere else we good
+        }
+
+        // start everything
+        initPlayer();
+    </script>
+</body>
+
+</html>
