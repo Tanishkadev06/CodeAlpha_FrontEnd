@@ -101,3 +101,8 @@ Tablet (adjusts columns/padding)
 Phone (compact but usable)
 
 Tested on Chrome, Firefox, Safari, and my Android.
+
+
+Thanks for checking out my internship projects. I put real effort into making these work properly, look clean, and feel smooth to use.
+
+If you're a recruiter or mentor – I'm open to feedback!
